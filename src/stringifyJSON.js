@@ -28,12 +28,25 @@ var stringifyJSON = function (obj) {
   			string += '{}';
   		else {
   			var loopString = "";
-  			for (var i in recurseObj){
-  				loopString += recurse(recurseObj[i]) + ',';
+  			if (Array.isArray(recurseObj)){
+  				for (var i=0; i<recurseObj.length; i++) {
+  					loopString += recurse(recurseObj[i]) + ',';
+  				}
+  			}
+  			else {
+  				for (var i in recurseObj){
+  					// dont' call the recursive function if the value of this property is a function or undefined, they are nonstringifiable
+  					if (typeof recurseObj[i] !== 'function' && typeof recurseObj[i] !== 'undefined')
+  						loopString += '"' + i + '":' + recurse(recurseObj[i]) + ',';
+  				}
   			}
   			loopString = loopString.slice(0,-1);
-
-  			loopString = '[' + loopString + ']';
+  			if (Array.isArray(recurseObj)){
+  				loopString = '[' + loopString + ']';
+  			}
+  			else {
+  				loopString = '{' + loopString + '}';	
+  			}
   			string = loopString;
   		}
   	}
@@ -43,7 +56,7 @@ var stringifyJSON = function (obj) {
   return finalString;
 };
 
-// checks if an object has an properties
+// checks if an object has any properties
 function isEmpty(map) {
    for(var key in map) {
       if (map.hasOwnProperty(key)) {
